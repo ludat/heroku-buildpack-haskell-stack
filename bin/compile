@@ -6,4 +6,6 @@ BUILD="$(cd ${1}/ && pwd)"
 ENV_DIR="$(cd ${2}/ && pwd)"
 #artifact_dir="$(cd ${3} && pwd)"
 
-curl -sSL https://get.haskellstack.org/ | bash
+mkdir -p "$BUILD/vendor/bin"
+
+curl -sSL https://get.haskellstack.org/ | DEST="$BUILD/vendor/bin" bash
