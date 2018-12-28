@@ -1,11 +1,30 @@
 #!/bin/bash
 
+set -x
 set -eo pipefail
 
-BUILD="$(cd ${1}/ && pwd)"
-ENV_DIR="$(cd ${2}/ && pwd)"
-#artifact_dir="$(cd ${3} && pwd)"
+BUILD_DIR="$(cd ${1}/ && pwd)"
+CACHE_DIR="$(cd ${2}/ && pwd)"
+ENV_DIR="$(cd ${3}/ && pwd)"
 
-mkdir -p "$BUILD/vendor/bin"
+VENDOR_BIN="$CACHE_DIR/vendor/bin"
+export STACK_ROOT="$CACHE_DIR/vendor/stack"
+STACK_WORK="$CACHE_DIR/vendor/stack-work"
 
-curl -sSL https://get.haskellstack.org/ | DEST="$BUILD/vendor/bin" bash
+export PATH=$VENDOR_BIN:$PATH
+
+mkdir -p "$VENDOR_BIN" "$STACK_ROOT" "$STACK_WORK" "$BUILD_DIR/bin"
+
+if [ ! -e "$VENDOR_BIN/stack" ]; then
+  curl -sSL https://get.haskellstack.org/ | bash -s -- --dest "$VENDOR_BIN"
+fi
+
+cd "$BUILD_DIR"
+
+ln -s $STACK_WORK .stack-work
+
+# stack upgrade
+stack --version
+stack setup
+stack build
+stack install --local-bin-path "$BUILD_DIR/bin/"
